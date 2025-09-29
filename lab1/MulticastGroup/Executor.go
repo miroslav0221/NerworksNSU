@@ -5,11 +5,13 @@ import (
 	"time"
 )
 
-func Execute() {
-	address := ParseArguments()
+const delay = 3
 
-	if address == "" {
-		fmt.Printf("Usage: multicast-group <multicast address>\n")
+func Execute() {
+	address, port := ParseArguments()
+
+	if address == "" && port == -1 {
+		fmt.Printf("Usage: multicast-group <multicast address> <port>\n")
 		return
 	}
 
@@ -24,17 +26,16 @@ func Execute() {
 	go multicastGroup.UpdatingTime()
 	go multicastGroup.CheckingAlliveIp()
 
-	err = multicastGroup.Connect()
+	err = multicastGroup.Connect(port)
 	if err != nil {
 		fmt.Printf("Failed to connect to MulticastGroup: %v\n", err)
 		return
 	}
 
-	fmt.Printf("My address: %s\n", multicastGroup.GetOutConn().LocalAddr().String())
 	fmt.Printf("Multicast group: %s\n", multicastGroup.GetAddress())
 
 	go multicastGroup.ReceiveMessage()
-	time.Sleep(3 * time.Second)
+	time.Sleep(delay * time.Second)
 	go multicastGroup.SendingMessageToGroup()
 
 	fmt.Println("Press Enter to exit...")
